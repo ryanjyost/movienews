@@ -9,12 +9,23 @@ let parser = new Parser();
 const CORS_PROXY = "https://arcane-everglades-70095.herokuapp.com";
 
 const youtubeRssUrl = "https://www.youtube.com/feeds/videos.xml?channel_id=";
+// https://commentpicker.com/youtube-channel-id.php
 const feeds = {
   rogerebert: {
-    title: "Roger Ebert",
     name: "RogerEbert.com",
     url: "https://www.rogerebert.com/feed/",
-    link: "https://www.rogerebert.com",
+  },
+  deadline: {
+    name: "Deadline",
+    url: "https://deadline.com/feed/",
+  },
+  // hollywoodReporter: {
+  //   name: "Hollywood Reporter",
+  //   url: "https://feeds.feedburner.com/live_feed/",
+  // },
+  variety: {
+    name: "Variety",
+    url: "https://variety.com/feed/",
   },
   movieCoverage: {
     title: "Movie Coverage",
@@ -57,6 +68,8 @@ export default function Home() {
     init();
   }, []);
 
+  console.log({ feedItemsByKey });
+
   const rowStyle = {
     display: "flex",
     width: "100%",
@@ -98,11 +111,13 @@ export default function Home() {
           const doc = new DOMParser().parseFromString(item.content, "text/xml");
           const img = doc?.querySelector("img");
           const src = img?.attributes?.src?.nodeValue;
+          const author = item.author ?? item.creator;
 
           if (item.sourceConfig.channelId) {
             const link = item.link.replace("watch?v=", "embed/");
             return (
               <iframe
+                key={item.id}
                 height={itemHeight * 2}
                 width={itemHeight * 2 * (16 / 9)}
                 src={link}
@@ -176,8 +191,13 @@ export default function Home() {
                       overflow: "hidden",
                     }}
                   >
-                    <b>{item.source}</b> | <i>{item.author}</i> |{" "}
-                    {item.contentSnippet}
+                    <b>{item.source}</b>{" "}
+                    {author ? (
+                      <>
+                        | <i>{author}</i>
+                      </>
+                    ) : null}{" "}
+                    | {item.contentSnippet}
                   </p>
                 </div>
                 <div
@@ -431,6 +451,8 @@ export default function Home() {
           flexDirection: "column",
         }}
       >
+        {renderRssFeed("deadline")}
+
         <div style={rowStyle}>
           {renderDeadlineTwitter()}
           {renderVarietyTwitter()}
@@ -442,7 +464,7 @@ export default function Home() {
           {renderCinemaBlend()}
           {renderMetacritic()}
         </div>
-        {renderRssFeed("rogerebert")}
+        {renderRssFeed("variety")}
         {renderRssFeed("movieCoverage")}
         <div style={rowStyle}>
           {renderNetflix()}
@@ -453,6 +475,7 @@ export default function Home() {
           {renderParamount()}
           {renderSony()}
         </div>
+        {renderRssFeed("rogerebert")}
         {/*<div style={rowStyle}>MOVIE and TV TRAILERS</div>*/}
         {/*<div style={rowStyle}>releases</div>*/}
         {/*<div style={rowStyle}> trades deals</div>*/}
